@@ -23,4 +23,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(BodyResponse.fail(Map.of("Route Error", "The path " + e.getRequestURL() + " does not exist.")));
     }
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    public ResponseEntity<BodyResponse<String>> handleUsernameTaken(UsernameAlreadyExistsException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(BodyResponse.fail(Map.of("error", e.getMessage())));
+    }
 }

@@ -1,8 +1,8 @@
-package com.ver.ssms.utility;
+package com.ver.ssms.utility.statuses;
 
 
 
-public enum RequestStatus {
+public enum StockRequestStatus {
     STOCK_ADDED,
     STOCK_UPDATED,
     STOCK_DELETED,

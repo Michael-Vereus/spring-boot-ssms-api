@@ -5,7 +5,7 @@ import com.ver.ssms.dto.stock.incoming.CreateStock;
 import com.ver.ssms.dto.stock.incoming.UpdateStock;
 import com.ver.ssms.model.Stock;
 import com.ver.ssms.service.StockService;
-import com.ver.ssms.utility.RequestStatus;
+import com.ver.ssms.utility.statuses.StockRequestStatus;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +26,7 @@ public class StockController {
                 BodyResponse.success(
                         Map.of(
                                 "result", stockService.getALl(),
-                                "request_status", RequestStatus.STOCK_FETCHED
+                                "request_status", StockRequestStatus.STOCK_FETCHED
                         )
                 )
         );
@@ -38,7 +38,7 @@ public class StockController {
                 BodyResponse.success(
                         Map.of(
                                 "result", stockService.newStockTransaction(new Stock(createStock)),
-                                "request_status", RequestStatus.STOCK_ADDED
+                                "request_status", StockRequestStatus.STOCK_ADDED
                         )
                 )
         );
@@ -50,7 +50,7 @@ public class StockController {
                 BodyResponse.success(
                         Map.of(
                                 "result",stockService.updateStock(new Stock(updateStock)),
-                                "request_status", RequestStatus.STOCK_UPDATED
+                                "request_status", StockRequestStatus.STOCK_UPDATED
                         )
                 )
         );

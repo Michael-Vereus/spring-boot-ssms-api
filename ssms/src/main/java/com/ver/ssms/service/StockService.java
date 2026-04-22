@@ -3,7 +3,7 @@ package com.ver.ssms.service;
 import com.ver.ssms.dto.stock.outrepo.StockSummaryMapping;
 import com.ver.ssms.model.Stock;
 import com.ver.ssms.repo.StockRepository;
-import com.ver.ssms.utility.RequestStatus;
+import com.ver.ssms.utility.statuses.StockRequestStatus;
 import com.ver.ssms.utility.TransactionType;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -73,7 +73,7 @@ public class StockService {
             }
 
             stockRepository.save(Stock.deleteStock(stockFound, quantity));
-            requestTrackRecord.put(id, RequestStatus.STOCK_DELETED);
+            requestTrackRecord.put(id, StockRequestStatus.STOCK_DELETED);
         }
         return requestTrackRecord;
     }

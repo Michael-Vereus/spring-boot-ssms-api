@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/SimpleStorageManagementSystem.iml" filepath="$PROJECT_DIR$/.idea/SimpleStorageManagementSystem.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ssms.main.iml" filepath="$PROJECT_DIR$/.idea/modules/ssms.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ssms.test.iml" filepath="$PROJECT_DIR$/.idea/modules/ssms.test.iml" />
     </modules>
   </component>
 </project>
