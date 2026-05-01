@@ -1,8 +1,13 @@
 package com.ver.ssms.service;
 
+import com.ver.ssms.dto.auth.LoginUser;
 import com.ver.ssms.model.UserEntity;
 import com.ver.ssms.repo.UserRepository;
+import com.ver.ssms.utility.JwtUtil;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
