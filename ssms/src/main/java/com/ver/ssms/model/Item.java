@@ -45,7 +45,6 @@ public class Item {
         byte[] bytes = new byte[4]; // 4 bytes = 8 hex chars -> change this for prefered length
         random.nextBytes(bytes);
 
-        // HexFormat is available in Java 17+
         return HexFormat.of().formatHex(bytes);
     }
 

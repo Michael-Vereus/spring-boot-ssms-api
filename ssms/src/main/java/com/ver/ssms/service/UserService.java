@@ -1,6 +1,7 @@
 package com.ver.ssms.service;
 
 import com.ver.ssms.dto.auth.LoginUser;
+import com.ver.ssms.exception.UsernameAlreadyExistsException;
 import com.ver.ssms.model.UserEntity;
 import com.ver.ssms.repo.UserRepository;
 import com.ver.ssms.utility.JwtUtil;
@@ -22,7 +23,7 @@ import org.springframework.stereotype.Service;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder; // nigga idk whats this, i think it has connections with these spring security but i dig deep abt it later on
+    private final PasswordEncoder passwordEncoder;
     // scratch the previous comment
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
@@ -36,6 +37,9 @@ public class UserService implements UserDetailsService {
     }
     /// for registering a new user
     public UserEntity register(UserEntity userEntity){
+        if (userRepository.existsByUsername(userEntity.getUsername())){
+            throw new UsernameAlreadyExistsException(userEntity.getUsername());
+        }
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
         return userRepository.save(userEntity);
     }

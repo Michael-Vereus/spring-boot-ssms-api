@@ -44,6 +44,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth.
                         requestMatchers("/ssms/api/auth/login").permitAll()
                         .requestMatchers("/ssms/api/auth/register").permitAll()
+                        .requestMatchers("/ssms/api/health").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

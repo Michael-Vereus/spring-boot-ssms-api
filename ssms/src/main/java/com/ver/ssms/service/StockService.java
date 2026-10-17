@@ -24,11 +24,20 @@ public class StockService {
     }
 
     @Transactional
-    public Stock newStockTransaction(Stock stock){ return stockRepository.save(stock);}
+    public Stock newStockTransaction(Stock stock){
+        if (stock.getType() == TransactionType.OUT ||
+                stock.getType() == TransactionType.TRANSFERRED) {
+            throw new RuntimeException("New Stock must be labeled as IN transaction");
+        }
+        return saveTransaction(stock);
+    }
 
     // to myself in the future CHECK THIS SHIT CUZ I THINK THERES SUMTHIN BUG? IDK JS CHECK IT
     @Transactional
-    public boolean updateStock(Stock stock){ // ps its basically balancing out and adding a new transaction not really updating a transaction. But naming it update stock sound easier to remember
+    public boolean updateStock(Stock stock){
+        // ps its basically balancing out and adding a new transaction not really updating a transaction.
+        // But naming it update stock sound easier to remember
+        // retrieving full stock information based on its id.
         Stock latestTransaction = getLatestStockTransactionById(stock.getStockId());
         if (latestTransaction == null) throw new AssertionError();
 
@@ -44,7 +53,7 @@ public class StockService {
                 }
             }
             stock.setStockId(stock.generateHexId());
-            newStockTransaction(stock);
+            saveTransaction(stock);
             return true;
         }
 
@@ -85,14 +94,21 @@ public class StockService {
         if (incomingStock.getType() != TransactionType.IN){
             throw new IllegalArgumentException(
                     "Cannot perform a transfer with type OUT nor TRANSFERRED. " +
-                            "Use TRANSFERRED when moving stock to a different item or storage."
+                            "Use IN when moving stock to a different item storage."
             );
         }
 
         Stock stockOut = Stock.outStockObj(latestTransaction);
-        newStockTransaction(stockOut);
-        newStockTransaction(incomingStock);
+        stockOut.setType(TransactionType.TRANSFERRED);
+        saveTransaction(stockOut);
+        saveTransaction(incomingStock);
     }
+
+    @Transactional
+    private Stock saveTransaction(Stock stock){
+        return stockRepository.save(stock);
+    }
+
 
     private boolean checkItemAndStorageId(Stock stock, Stock latestTransaction){
         // check if the storage id and the item id still the same or not

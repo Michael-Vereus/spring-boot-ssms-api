@@ -17,7 +17,7 @@ public class JwtUtil {
     public String generateToken(String username){
         return Jwts.builder().subject(username)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 90))
                 .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY)))
                 .compact();
     }
