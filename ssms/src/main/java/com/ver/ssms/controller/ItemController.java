@@ -44,17 +44,36 @@ public class ItemController {
     public ResponseEntity<BodyResponse<Item>> addItem(@Valid @RequestBody CreateItem createItem){
         Item newItem = new Item(createItem);
         //return ResponseEntity.ok(BodyResponse.debug(newItem.getItemID() + newItem.getItemPrice()) ); --> for debugging
-        return ResponseEntity.ok(BodyResponse.success(Map.of("result", itemService.upsert(newItem))));
+        return ResponseEntity.ok(
+                BodyResponse.success(
+                        Map.of(
+                                "result", itemService.upsert(newItem)
+                        )
+                )
+        );
     }
     // test this route later --> note from 06.18
     @DeleteMapping("/del")
     public ResponseEntity<BodyResponse<Boolean>> addItem(@Valid @RequestBody DeleteItem deleteItem){
-        return ResponseEntity.ok(BodyResponse.debug(itemService.deleteById(deleteItem.getItemId())));
+        return ResponseEntity.ok(
+                BodyResponse.success(
+                        Map.of(
+                                "result", itemService.deleteById(deleteItem.getItemId())
+                        )
+                )
+        );
     }
     // test this route also
     @PutMapping("/update")
     public ResponseEntity<BodyResponse<Item>> updateItem(@Valid @RequestBody UpdateItem updateItem){
-        return ResponseEntity.ok(BodyResponse.success(Map.of("result", itemService.upsert(new Item(updateItem)))));
+        return ResponseEntity.ok(
+                BodyResponse.success(
+                        Map.of(
+                                "result", itemService.upsert(new Item(updateItem)
+                                )
+                        )
+                )
+        );
     }
 
 }
