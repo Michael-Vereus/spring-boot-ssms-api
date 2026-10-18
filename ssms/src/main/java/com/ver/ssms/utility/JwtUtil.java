@@ -4,6 +4,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -12,7 +14,8 @@ import java.util.Date;
 public class JwtUtil {
     /// IMPORTANT ! THIS IS NOT RECCOMENDED IN PRODUCTION
     /// SO TO MY FUTURE SELF QUICKLY MOVE THIS TO AN ENV FILE !!!
-    private final String SECRET_KEY = "U2JIhQn505/RUvC5hLdeu4QrU8SUe2H8e8gH7mFt19Y";
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
 
     public String generateToken(String username){
         return Jwts.builder().subject(username)
