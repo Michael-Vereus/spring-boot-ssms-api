@@ -1,9 +1,757 @@
 openapi: 3.1.0
 info:
-  title: Title
-  description: Title
+  title: SSMS - Simple Storage Management System API
+  description: |
+    REST API for managing items, storages and stock transactions.
+
+    Every JSON response is wrapped in a common envelope (`BodyResponse`):
+
+    ```json
+    { "status": true, "response": { "result": <payload> } }
+    ```
+
+    - `status` is `true` for `success(...)` responses.
+    - The `response` object is a free-form map whose keys depend on the endpoint
+      (commonly `result`, but also `token`, `user`, `request_status`, or
+      `debug_mode`).
+
+    All routes except `/ssms/api/auth/login`, `/ssms/api/auth/register` and
+    `/ssms/api/health` require a JWT in the `Authorization` header.
   version: 1.0.0
+  contact:
+    name: SSMS
 servers:
-  - url: 'https'
+  - url: http://localhost:8082
+    description: Local development server
+
+tags:
+  - name: Health
+    description: Service and database health checks
+  - name: Auth
+    description: Registration and login
+  - name: Item
+    description: Item CRUD operations
+  - name: Storage
+    description: Storage location CRUD operations
+  - name: Stock
+    description: Stock transaction operations
+
+security:
+  - bearerAuth: []
+
 paths:
-  
+  /ssms/api/health:
+    get:
+      tags: [Health]
+      summary: Check service and database health
+      security: []
+      responses:
+        '200':
+          description: Service health information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: UP
+                  totalMemory:
+                    type: string
+                  freeMemory:
+                    type: string
+                  usedMemory:
+                    type: string
+                  dbStatus:
+                    type: string
+                    example: "1"
+
+  /ssms/api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUser'
+      responses:
+        '200':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /ssms/api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in and obtain a JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUser'
+      responses:
+        '200':
+          description: Authentication token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /ssms/api/item/index:
+    get:
+      tags: [Item]
+      summary: List all items
+      responses:
+        '200':
+          description: All items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /ssms/api/item/search/{name}:
+    get:
+      tags: [Item]
+      summary: Find an item by name
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Matching item (if found)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /ssms/api/item/new:
+    post:
+      tags: [Item]
+      summary: Create a new item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateItem'
+      responses:
+        '200':
+          description: Created item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /ssms/api/item/update:
+    put:
+      tags: [Item]
+      summary: Update an existing item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateItem'
+      responses:
+        '200':
+          description: Updated item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /ssms/api/item/del:
+    delete:
+      tags: [Item]
+      summary: Delete one or more items by id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteItem'
+      responses:
+        '200':
+          description: Debug response containing deletion result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebugBooleanResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /ssms/api/storage/index:
+    get:
+      tags: [Storage]
+      summary: List all storage locations
+      responses:
+        '200':
+          description: All storages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /ssms/api/storage/search/{name}:
+    get:
+      tags: [Storage]
+      summary: Find a storage by name
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Matching storage (if found)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /ssms/api/storage/new:
+    post:
+      tags: [Storage]
+      summary: Create a new storage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStorage'
+      responses:
+        '200':
+          description: Created storage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /ssms/api/storage/update:
+    put:
+      tags: [Storage]
+      summary: Update an existing storage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStorage'
+      responses:
+        '200':
+          description: Updated storage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /ssms/api/storage/del:
+    delete:
+      tags: [Storage]
+      summary: Delete one or more storages by id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteStorage'
+      responses:
+        '200':
+          description: Debug response containing deletion result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebugResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /ssms/api/stock/index:
+    get:
+      tags: [Stock]
+      summary: List current stock summary
+      responses:
+        '200':
+          description: Stock summary list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BodyResponse'
+                  - type: object
+                    properties:
+                      response:
+                        type: object
+                        properties:
+                          result:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/StockSummary'
+                          request_status:
+                            $ref: '#/components/schemas/StockRequestStatus'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /ssms/api/stock/new:
+    post:
+      tags: [Stock]
+      summary: Record a new stock transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStock'
+      responses:
+        '200':
+          description: Created stock transaction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /ssms/api/stock/edit:
+    put:
+      tags: [Stock]
+      summary: Edit an existing stock transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStock'
+      responses:
+        '200':
+          description: Updated stock transaction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /ssms/api/stock/delete:
+    delete:
+      tags: [Stock]
+      summary: Set stock quantity to zero for one or more stock ids
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteStock'
+      responses:
+        '200':
+          description: Result map of the delete operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebugResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Invalid input or unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BodyResponse'
+    Conflict:
+      description: Username already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BodyResponse'
+
+  schemas:
+    BodyResponse:
+      type: object
+      description: Envelope returned by every endpoint.
+      required: [status, response]
+      properties:
+        status:
+          type: boolean
+          example: true
+        response:
+          type: object
+          additionalProperties: true
+
+    Item:
+      type: object
+      properties:
+        itemID:
+          type: string
+          example: "a1b2c3d4"
+        itemName:
+          type: string
+        itemPrice:
+          type: integer
+          format: int32
+          minimum: 1
+
+    Storage:
+      type: object
+      properties:
+        storageId:
+          type: string
+        storageName:
+          type: string
+        storageCapacity:
+          type: integer
+          format: int32
+          minimum: 1
+
+    Stock:
+      type: object
+      properties:
+        stockId:
+          type: string
+        itemId:
+          type: string
+        storageId:
+          type: string
+        type:
+          $ref: '#/components/schemas/TransactionType'
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+
+    StockSummary:
+      type: object
+      properties:
+        stockId:
+          type: string
+        itemId:
+          type: string
+        storageId:
+          type: string
+        quantityOnHand:
+          type: integer
+          format: int64
+
+    TransactionType:
+      type: string
+      enum: [IN, OUT, TRANSFERRED]
+
+    UserRole:
+      type: string
+      enum: [USER, ADMIN]
+
+    StockRequestStatus:
+      type: string
+      enum: [STOCK_ADDED, STOCK_UPDATED, STOCK_DELETED, STOCK_RESTORED, STOCK_FETCHED]
+
+    RegisterUser:
+      type: object
+      required: [username, password]
+      properties:
+        userId:
+          type: string
+          nullable: true
+          description: Must be omitted; the server generates the id.
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+
+    LoginUser:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    CreateItem:
+      type: object
+      required: [itemName, itemPrice]
+      properties:
+        itemId:
+          type: string
+          nullable: true
+          description: Must be empty; generated server-side.
+        itemName:
+          type: string
+          minLength: 1
+        itemPrice:
+          type: integer
+          format: int32
+          minimum: 1
+
+    UpdateItem:
+      type: object
+      required: [itemId, itemName, itemPrice]
+      properties:
+        itemId:
+          type: string
+        itemName:
+          type: string
+        itemPrice:
+          type: integer
+          format: int32
+          minimum: 1
+
+    DeleteItem:
+      type: object
+      required: [itemId]
+      properties:
+        itemId:
+          type: array
+          items:
+            type: string
+
+    CreateStorage:
+      type: object
+      required: [storageName, storageCapacity]
+      properties:
+        storageId:
+          type: string
+          nullable: true
+        storageName:
+          type: string
+        storageCapacity:
+          type: integer
+          format: int32
+          minimum: 1
+
+    UpdateStorage:
+      type: object
+      required: [storageId, storageName, storageCapacity]
+      properties:
+        storageId:
+          type: string
+        storageName:
+          type: string
+        storageCapacity:
+          type: integer
+          format: int32
+          minimum: 1
+
+    DeleteStorage:
+      type: object
+      required: [storageId]
+      properties:
+        storageId:
+          type: array
+          items:
+            type: string
+
+    CreateStock:
+      type: object
+      required: [itemId, storageId, quantity, type]
+      properties:
+        stockId:
+          type: string
+          nullable: true
+        itemId:
+          type: string
+        storageId:
+          type: string
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+        type:
+          $ref: '#/components/schemas/TransactionType'
+
+    UpdateStock:
+      type: object
+      required: [stockId, itemId, storageId, quantity, type]
+      properties:
+        stockId:
+          type: string
+        itemId:
+          type: string
+        storageId:
+          type: string
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+        type:
+          $ref: '#/components/schemas/TransactionType'
+
+    DeleteStock:
+      type: object
+      required: [stockId]
+      properties:
+        stockId:
+          type: array
+          items:
+            type: string
+
+    RegisterUser:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    LoginUser:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    User:
+      type: object
+      properties:
+        userId:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+
+    UserResponse:
+      allOf:
+        - $ref: '#/components/schemas/BodyResponse'
+        - type: object
+          properties:
+            response:
+              type: object
+              properties:
+                user:
+                  $ref: '#/components/schemas/User'
+
+    TokenResponse:
+      allOf:
+        - $ref: '#/components/schemas/BodyResponse'
+        - type: object
+          properties:
+            response:
+              type: object
+              properties:
+                token:
+                  type: string
+
+    ItemResponse:
+      allOf:
+        - $ref: '#/components/schemas/BodyResponse'
+        - type: object
+          properties:
+            response:
+              type: object
+              properties:
+                result:
+                  $ref: '#/components/schemas/Item'
+
+    ItemListResponse:
+      allOf:
+        - $ref: '#/components/schemas/BodyResponse'
+        - type: object
+          properties:
+            response:
+              type: object
+              properties:
+                result:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Item'
+
+    StorageResponse:
+      allOf:
+        - $ref: '#/components/schemas/BodyResponse'
+        - type: object
+          properties:
+            response:
+              type: object
+              properties:
+                result:
+                  $ref: '#/components/schemas/Storage'
+
+    StorageListResponse:
+      allOf:
+        - $ref: '#/components/schemas/BodyResponse'
+        - type: object
+          properties:
+            response:
+              type: object
+              properties:
+                result:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Storage'
+
+    StockResponse:
+      allOf:
+        - $ref: '#/components/schemas/BodyResponse'
+        - type: object
+          properties:
+            response:
+              type: object
+              properties:
+                result:
+                  $ref: '#/components/schemas/Stock'
+                request_status:
+                  $ref: '#/components/schemas/StockRequestStatus'
+
+    DebugResponse:
+      allOf:
+        - $ref: '#/components/schemas/BodyResponse'
+        - type: object
+          properties:
+            status:
+              type: boolean
+              example: false
+            response:
+              type: object
+              properties:
+                debug_mode: {}
+
+    StockRequestStatus:
+      type: string
+      enum: [STOCK_ADDED, STOCK_UPDATED, STOCK_DELETED, STOCK_RESTORED, STOCK_FETCHED]
